@@ -18,7 +18,7 @@ class _ProductFormView extends State<ProductFormView> {
 
   void _loadFormData(Product product) {
     if (product != null) {
-      _formData['id'] = product.id;
+      _formData['key'] = product.key;
       _formData['name'] = product.name;
       _formData['priceString'] = moneyFormat(product.price);
     }
@@ -97,15 +97,15 @@ class _ProductFormView extends State<ProductFormView> {
                 ),
                 color: Colors.red.shade800,
                 textColor: Colors.white,
-                onPressed: () {
+                onPressed: () async {
                   final isValid = _form.currentState.validate();
 
                   if (isValid) {
                     _form.currentState.save();
 
-                    Provider.of<ProductsProvider>(context, listen: false).save(
+                    await Provider.of<ProductsProvider>(context, listen: false).save(
                       Product(
-                        id: _formData['id'],
+                        key: _formData['key'],
                         name: _formData['name'],
                         price: _formData['price'],
                       ),

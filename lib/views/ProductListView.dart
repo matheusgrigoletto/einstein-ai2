@@ -3,14 +3,16 @@ import 'package:provider/provider.dart';
 import 'package:einstein_ai2/components/ProductTile.dart';
 import 'package:einstein_ai2/providers/ProductsProvider.dart';
 import 'package:einstein_ai2/routes/AppRoutes.dart';
-import 'package:einstein_ai2/helpers/moneyFormat.dart';
 
-class ProductListView extends StatelessWidget {
+  class ProductListView extends StatefulWidget {
+  @override
+  _ProductListViewState createState() => _ProductListViewState();
+}
+
+class _ProductListViewState extends State<ProductListView> {
   @override
   Widget build(BuildContext context) {
     final ProductsProvider products = Provider.of<ProductsProvider>(context);
-
-    String total = moneyFormat(products.total);
 
     return Scaffold(
       appBar: AppBar(
@@ -22,12 +24,12 @@ class ProductListView extends StatelessWidget {
           child: Column(
             children: <Widget>[
               Expanded(
-                  child: ListView.separated(
-                    padding: const EdgeInsets.all(4),
-                    itemCount: products.count,
-                    itemBuilder: (ctx, i) => ProductTile(products.byIndex(i)),
-                    separatorBuilder: (BuildContext ctx, int index) => const Divider(),
-                  ),
+                child: ListView.separated(
+                  padding: const EdgeInsets.all(4),
+                  itemCount: products.count,
+                  itemBuilder: (ctx, i) => ProductTile(products.byIndex(i)),
+                  separatorBuilder: (BuildContext ctx, int index) => const Divider(),
+                ),
               ),
             ],
           )

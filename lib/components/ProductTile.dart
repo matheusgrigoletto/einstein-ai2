@@ -22,7 +22,7 @@ class ProductTile extends StatelessWidget {
           children: <Widget>[
             IconButton(
               icon: Icon(Icons.edit),
-              color: Colors.orangeAccent,
+              color: Colors.redAccent,
               onPressed: () {
                 Navigator.of(context).pushNamed(
                   AppRoutes.FORM,
@@ -46,15 +46,15 @@ class ProductTile extends StatelessWidget {
                       ),
                       FlatButton(
                         child: Text('Sim'),
-                        color: Colors.deepOrange,
+                        color: Colors.redAccent,
                         textColor: Colors.white,
                         onPressed: () => Navigator.of(context).pop(true),
                       ),
                     ],
                   ),
-                ).then((confirmed) {
+                ).then((confirmed) async {
                   if (confirmed) {
-                    Provider.of<ProductsProvider>(context, listen: false).destroy(this.product);
+                    await Provider.of<ProductsProvider>(context, listen: false).destroy(this.product.key);
                   }
                 });
               },

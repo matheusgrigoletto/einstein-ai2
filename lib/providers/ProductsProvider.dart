@@ -1,60 +1,76 @@
 import 'package:flutter/material.dart';
 import 'package:einstein_ai2/models/Product.dart';
-import 'package:einstein_ai2/data/mockdata.dart';
+import 'package:einstein_ai2/database.dart';
+import 'package:sqflite/sqflite.dart';
+import 'dart:async';
 
 class ProductsProvider with ChangeNotifier {
-  final Map<int, Product> _items = {...MOCK_DATA };
+  List<Product> _items = [];
+
+  ProductsProvider() {
+    initBD(cb: () async {
+      this.load();
+    });
+  }
+
+  Timer timer;
+
+  void load() async {
+    try {
+      this._items = await this.loadProducts();
+      notifyListeners();
+
+      if (this.timer != null) {
+        this.timer.cancel();
+      }
+    }
+    catch(e) {
+      this.timer = Timer(Duration(seconds: 2), () => this.load());
+    }
+  }
+
+  Future<List<Product>> loadProducts() async {
+    final Database db = await database;
+    final List<Map<String, dynamic>> maps = await db.query('products');
+
+    return List.generate(maps.length, (i) {
+      return Product(
+        key: maps[i]['key'],
+        name: maps[i]['name'],
+        price: maps[i]['price'],
+      );
+    });
+  }
 
   int get count => _items.length;
 
-  double get total {
-    double t = 0.0;
-    _items.values.forEach((Product p) => t += p.price);
-    return t;
-  }
+  Product byIndex(int index) => _items.elementAt(index);
 
-  Product byIndex(int index) => _items.values.elementAt(index);
+  Future<void> save(Product product) async {
+    final Database db = await database;
 
-  void _update(Product product) {
-    _items.update(product.id, (_) => product);
-  }
+    await db.insert(
+      'products',
+      product.toMap(),
+      conflictAlgorithm: ConflictAlgorithm.replace,
+    );
 
-  int _generateId() {
-    int id = 1;
-    if (this.count > 0) {
-      id = _items.values.last.id + 1;
-    }
-    return id;
-  }
-
-  void _create(Product product) {
-    final int id = this._generateId();
-
-    _items.putIfAbsent(id, () => Product(
-      id: id,
-      name: product.name,
-      price: product.price,
-    ));
-  }
-
-  void save(Product product) {
-    if (product == null) {
-      return;
-    }
-
-    if (product.id != null && _items.containsKey(product.id)) {
-      this._update(product);
-    } else {
-      this._create(product);
-    }
+    this._items = await this.loadProducts();
 
     notifyListeners();
   }
 
-  void destroy(Product product) {
-    if (product != null && product.id != null) {
-      _items.remove(product.id);
-      notifyListeners();
-    }
+  Future<void> destroy(int key) async {
+    final Database db = await database;
+
+    await db.delete(
+        'products',
+        where: 'key = ?',
+        whereArgs: [key]
+    );
+
+    this._items = await this.loadProducts();
+
+    notifyListeners();
   }
 }
